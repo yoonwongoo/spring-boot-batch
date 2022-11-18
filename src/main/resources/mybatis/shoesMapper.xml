@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.batch.test.mapper.ShoesMapper">
+
+    <select id="selectShoesList" resultType="Shoes">
+
+        select * from shoes
+    </select>
+
+    <insert id="insertShoes" parameterType="Shoes">
+        insert into shoes(shoesBrand,shoesName,shoesSize) values(#{shoesBrand}, #{shoesName}, #{shoesSize})
+
+    </insert>
+
+
+</mapper>
