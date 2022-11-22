@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.batch.test.mapper.UserMapper">
+
+    <select id="selectUserTotalPrice" resultType="UserTotalPrice">
+        select u.id as userId, IFNULL(sum(fo.totalPrice),0) as totalPrice  from user u
+        left join (select * from foodOrder where date_format(orderDate,'%Y-%m') = date_format(date_add(now(),interval -1 month),'%Y-%m')) fo on fo.userId = u.id
+        group by u.id LIMIT #{_skiprows}, #{_pagesize}
+    </select>
+
+    <update id="updateUserGrade" parameterType="UpdateUserGrade">
+
+        update user set
+        grade =#{grade}
+        where id =#{userId}
+
+    </update>
+
+    <select id="selectUserGrade" resultType="UserGrade">
+        select id as userId,grade from user LIMIT #{_skiprows}, #{_pagesize};
+
+
+    </select>
+
+
+</mapper>
