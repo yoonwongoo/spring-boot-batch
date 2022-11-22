@@ -1,6 +1,7 @@
 package com.batch.test.config.batch2;
 
 
+import com.batch.test.config.batch3.BatchUserGradeAndInsertPointConfiguration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.javassist.Loader;
@@ -28,9 +29,9 @@ public class MybatisScheduler {
 
     private final JobLauncher jobLauncher;
 
-    private final MybatisBatchUserGradeConfiguration mybatisBatchUserGradeConfiguration;
+    private final BatchUserGradeAndInsertPointConfiguration batchUserGradeAndInsertPointConfiguration;
 
-    @Scheduled(cron = "0 41 19 * * *")//
+    @Scheduled(cron = "0 24 22 * * *")
 
     public void jobRun(){
         System.out.println("스케줄러 실행된다");
@@ -43,7 +44,7 @@ public class MybatisScheduler {
         JobParameters jobParameters = new JobParameters(parameterMap);
 
         try{
-            jobLauncher.run(mybatisBatchUserGradeConfiguration.updateUserGradeJob(),jobParameters );
+            jobLauncher.run(batchUserGradeAndInsertPointConfiguration.userGradeAndInsertPointJob(),jobParameters );
         }catch (JobExecutionAlreadyRunningException|JobInstanceAlreadyCompleteException|
         JobParametersInvalidException|JobRestartException e){
             log.error(e.getMessage());

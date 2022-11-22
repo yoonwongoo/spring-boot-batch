@@ -94,7 +94,7 @@ public class JdbcBatchConfiguration {
     /*jdbcItemWriter*/
     @Bean
     @StepScope
-    private JdbcBatchItemWriter<Object> jdbcBatchItemWriter() {
+    public JdbcBatchItemWriter<Object> jdbcBatchItemWriter() {
 
         JdbcBatchItemWriter<Object> jdbcBatchItemWriter = new JdbcBatchItemWriterBuilder<>()
                 .dataSource(dataSource)
