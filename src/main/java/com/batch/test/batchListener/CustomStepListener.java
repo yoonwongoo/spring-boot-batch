@@ -21,8 +21,8 @@ public class CustomStepListener implements StepExecutionListener {
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
-        log.info("step 시작 후 step 이름:{},step 상태:{} ",stepExecution.getStepName(),stepExecution.getStatus());
-
-        return null;
+        log.info("step 시작 후 step 이름:{},step 상태:{}",
+                stepExecution.getStepName(),stepExecution.getStatus());
+        return stepExecution.getExitStatus();
     }
 }

@@ -31,7 +31,7 @@ public class MybatisScheduler {
 
     private final BatchUserGradeAndInsertPointConfiguration batchUserGradeAndInsertPointConfiguration;
 
-    @Scheduled(cron = "0 24 22 * * *")
+    @Scheduled(cron = "0 28 23 * * *")
 
     public void jobRun(){
         System.out.println("스케줄러 실행된다");

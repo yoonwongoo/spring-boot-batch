@@ -1,6 +1,7 @@
 package com.batch.test.config.batch3;
 
 
+import com.batch.test.batchListener.CustomJobListener;
 import com.batch.test.batchListener.CustomStepListener;
 import com.batch.test.dto.InsertUserPoint;
 import com.batch.test.dto.UpdateUserGrade;
@@ -22,8 +23,11 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.flow.JobExecutionDecider;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 
 import java.sql.SQLException;
@@ -38,6 +42,8 @@ public class BatchUserGradeAndInsertPointConfiguration {
 
     private final SqlSessionFactory sqlSessionFactory;
 
+    private final TaskExecutor taskExecutor;
+
     private static final String JOB_NAME = "userGradeAndInsertPointJob";
 
     @Bean(JOB_NAME)
@@ -45,6 +51,7 @@ public class BatchUserGradeAndInsertPointConfiguration {
 
         return this.jobBuilderFactory.get("userGradeAndInsertPointJob")
                 .incrementer(new RunIdIncrementer())
+                .listener(new CustomJobListener())
                 .start(this.updateUserGradeStep())
                 .next(stepDecider())
                 .from(stepDecider())
@@ -67,22 +74,20 @@ public class BatchUserGradeAndInsertPointConfiguration {
         log.info("step실행");
 
         return stepBuilderFactory.get("updateUserGradeStep")
-                .listener(new CustomStepListener())
                 .<UserTotalPrice, UpdateUserGrade>chunk(10)
                 .reader(this.updateUserGradeItemReader())
                 .processor(this.updateUserGradeItemProcessor())
                 .writer(this.updateUserGradeItemWriter())
-                .faultTolerant()
-                .retry(DeadlockLoserDataAccessException.class)
-                .retryLimit(3)
+                .taskExecutor(this.taskExecutor)
+                .throttleLimit(8)
+                .listener(new CustomStepListener())
                 .build();
     }
 
 
     /*회원의 아이디와 이번달 총 가격*/
     @Bean
-    @StepScope
-    public MyBatisPagingItemReader<UserTotalPrice> updateUserGradeItemReader() {
+    public ItemReader<UserTotalPrice> updateUserGradeItemReader() {
 
 
         MyBatisPagingItemReader myBatisPagingItemReader = new MyBatisPagingItemReaderBuilder<UserTotalPrice>()
@@ -94,7 +99,6 @@ public class BatchUserGradeAndInsertPointConfiguration {
     }
 
     @Bean
-    @StepScope
     public ItemProcessor<UserTotalPrice, UpdateUserGrade> updateUserGradeItemProcessor() {
 
         return up -> up.updateGrade(up.getUserId(), up.getTotalPrice());
@@ -102,7 +106,6 @@ public class BatchUserGradeAndInsertPointConfiguration {
     }
 
     @Bean
-    @StepScope
     public MyBatisBatchItemWriter<UpdateUserGrade> updateUserGradeItemWriter() {
 
         MyBatisBatchItemWriter<UpdateUserGrade> userGradeMyBatisBatchItemWriter = new MyBatisBatchItemWriterBuilder<UpdateUserGrade>()
@@ -118,22 +121,21 @@ public class BatchUserGradeAndInsertPointConfiguration {
     @JobScope
     public Step insertPointStep() {
         return stepBuilderFactory.get("insertPointStep")
-                .listener(new CustomStepListener())
                 .<UserGrade, InsertUserPoint>chunk(10)
                 .reader(this.insertPointItemReader())
                 .processor(this.insertPointProcessor())
                 .writer(this.insertPointItemWriter())
-                .faultTolerant()
-                .retry(DeadlockLoserDataAccessException.class)
-                .retryLimit(3)
+
+                .taskExecutor(this.taskExecutor)
+                .throttleLimit(8)
+                .listener(new CustomStepListener())
                 .build();
 
     }
 
 
     @Bean
-    @StepScope
-    public MyBatisPagingItemReader<UserGrade> insertPointItemReader() {
+    public ItemReader<UserGrade> insertPointItemReader() {
 
         MyBatisPagingItemReader<UserGrade> userGradeMyBatisPagingItemReader = new MyBatisPagingItemReaderBuilder<UserGrade>()
                 .pageSize(10)
@@ -145,7 +147,6 @@ public class BatchUserGradeAndInsertPointConfiguration {
     }
 
     @Bean
-    @StepScope
     public ItemProcessor<UserGrade, InsertUserPoint> insertPointProcessor() {
 
         return userGrade -> userGrade.insertUserPoint(userGrade.getUserId(), userGrade.getGrade());
@@ -153,7 +154,6 @@ public class BatchUserGradeAndInsertPointConfiguration {
 
 
     @Bean
-    @StepScope
     public MyBatisBatchItemWriter<InsertUserPoint> insertPointItemWriter() {
 
         MyBatisBatchItemWriter<InsertUserPoint> pointMyBatisBatchItemWriter = new MyBatisBatchItemWriterBuilder<InsertUserPoint>()
