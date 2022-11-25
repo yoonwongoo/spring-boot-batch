@@ -5,7 +5,6 @@
 * IntelliJ IDEA 
 * Java 11
 * Maven
-* Spring-boot
-* spring-boot-starter-batch
-* mybatis-spring-boot-starter
+* Spring:5.3.23
+* spring-batch:4.3.7
 ### [작성블로그](https://yoon9.tistory.com/30) 
